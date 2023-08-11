@@ -1,20 +1,21 @@
+/** @jsxImportSource @emotion/react */
 import React, { useState } from 'react';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Alert from '@mui/material/Alert';
 import Collapse from '@mui/material/Collapse';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { useDispatch } from 'react-redux';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { StoreDispatch } from '../redux/store';
 import { IColumnLayoutProps } from '../types';
+import { styles } from './style';
+import { Accordion, AccordionDetails, AccordionSummary, Typography } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const ColumnLayout: React.FC<IColumnLayoutProps> = ({
   labelText,
@@ -104,10 +105,13 @@ const ColumnLayout: React.FC<IColumnLayoutProps> = ({
           value={titleDescription}
           variant='outlined'
           size='small'
+          css={styles.textField}
       />
       <TextField
         fullWidth
         label={"description "}
+        multiline
+        rows={3}
         onChange={handleOnChange}
         onBlur={handleOnBlur}
         onKeyDown={handleInputKeyDown}
@@ -125,7 +129,6 @@ const ColumnLayout: React.FC<IColumnLayoutProps> = ({
       <Box width='100%' display='flex' justifyContent='center'>
         <Button
           size='medium'
-          sx={{ my: 1, maxWidth: 200 }}
           variant='outlined'
           color='primary'
           fullWidth
@@ -134,6 +137,7 @@ const ColumnLayout: React.FC<IColumnLayoutProps> = ({
           disabled={
             textDescription.length === 0 || textDescription.length > 200
           }
+          css={styles.addButton}
         >
           Add Item
         </Button>
@@ -159,100 +163,76 @@ const ColumnLayout: React.FC<IColumnLayoutProps> = ({
                 index: number
               ) => (
                 <Draggable key={id} draggableId={id} index={index}>
-                  {(provided, snapshot) => (
-                    <ListItem
-                      sx={{
-                        transition: '.3s ease background-color',
-                        color: snapshot.isDragging ? '#fff' : '#000',
-                        bgcolor: snapshot.isDragging ? '#000' : '#fff',
-                        position: 'relative',
-                        border: '1px solid #989898',
-                        my: 1,
-                        borderRadius: '3px',
-                        '& .MuiTypography-root': {
-                          display: 'flex',
-                          alignItems: 'center',
-                        },
-                      }}
+                  {(provided, snapshot) => 
+                    <Accordion 
+                      css={styles.accordion}
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
-                    >
-                      <ListItemText
+                  >
+                    <AccordionSummary  
+                        expandIcon={<ExpandMoreIcon />}
                         sx={{
-                          textDecoration: isFinished ? 'line-through' : 'none',
-                          wordBreak: 'break-word',
+                            textDecoration: isFinished ? 'line-through' : 'none',
+                            wordBreak: 'break-word',
                         }}
-                      >
-                        <IconButton
-                          sx={{ p: 1, mr: 1 }}
-                          onClick={() =>
-                            dispatch(
-                              updateTextShowed({
-                                id,
-                                isTextShowed: !isTextShowed,
-                              })
-                            )
-                          }
-                        >
-                          <ArrowDownwardIcon
-                            sx={{
-                              color: snapshot.isDragging ? '#fff' : '#000',
-                              transform: !isTextShowed ? 'rotate(180deg)' : '',
-                            }}
-                          />
-                        </IconButton>
-
-                        <Box
-                          component='span'
-                          width='100%'
-                          position='absolute'
-                          top='0'
-                          fontSize='.7rem'
-                        >
-                          {updatedAt ? 'Updated' : 'Created'} at:{' '}
-                          {updatedAt || createdAt}
-                        </Box>
-
-                        {title && <Box component='div' width='100%'>
-                          {title}
-                        </Box>}
-
-                        <Box display='flex' component='span'>
-                          <IconButton
-                            onClick={() => dispatch(removeHandler(id))}
+                    >
+                          <Box
+                            component='span'
+                            width='100%'
+                            position='absolute'
+                            top='0'
+                            fontSize='.7rem'
+                            marginLeft='10px'
+                            marginTop= '4px'
                           >
-                            <DeleteIcon
-                              sx={{
-                                color: snapshot.isDragging ? '#fff' : '#000',
-                              }}
-                            />
-                          </IconButton>
-                          <Checkbox
-                            edge='end'
-                            value={isFinished}
-                            checked={isFinished}
-                            inputProps={{ 'aria-label': 'controlled' }}
-                            onChange={() =>
-                              dispatch(
-                                completedHandler({
-                                  isFinished: !isFinished,
-                                  id,
-                                  updatedAt: new Date().toLocaleString(),
-                                })
-                              )
-                            }
-                          />
-                        </Box>
+                            {updatedAt ? 'Updated' : 'Created'} at:{' '}
+                            {updatedAt || createdAt}
+                          </Box>
 
-                      </ListItemText>
-                      <Collapse in={isTextShowed}>
-                        <Box component='div' width='100%'>
-                          {text}
-                        </Box>
-                      </Collapse>
-                    </ListItem>
-                  )}
+                          {title && <Box component='div' css={styles.titleBox}>
+                            {title}
+                          </Box>}
+
+                          <Box display='flex' component='span'>
+                            <IconButton
+                              onClick={() => dispatch(removeHandler(id))}
+                            >
+                              <DeleteIcon
+                                sx={{
+                                  color: snapshot.isDragging ? '#fff' : '#000',
+                                }}
+                              />
+                            </IconButton>
+                            <Checkbox
+                              edge='end'
+                              value={isFinished}
+                              checked={isFinished}
+                              sx={{
+                                '& .MuiSvgIcon-root': {
+                                color: isFinished? 'green' : '#55555582'
+                                }
+                            }}
+                              inputProps={{ 'aria-label': 'controlled' }}
+                              onChange={() =>
+                                dispatch(
+                                  completedHandler({
+                                    isFinished: !isFinished,
+                                    id,
+                                    updatedAt: new Date().toLocaleString(),
+                                  })
+                                )
+                              }
+                            />
+                          </Box>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Box component='div' css={styles.textBox}>
+                        {text}
+                      </Box>
+                    </AccordionDetails>
+                  </Accordion>                    
+                  }
                 </Draggable>
               )
             )}
